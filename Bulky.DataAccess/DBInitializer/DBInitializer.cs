@@ -52,7 +52,7 @@ namespace Bulky.DataAccess.DBInitializer
                 _userManager.CreateAsync(new ApplicationUser //Application, password
                 {
                     UserName = "Katlego Admin",
-                    Email = "kgomari88@gmail.com",
+                    Email = "katlego.kgomari@24.com",
                     Name = "Katlego Kgomari",
                     PhoneNumber = "0987654321",
                     StreetAddress = "123 BombShell Street",
