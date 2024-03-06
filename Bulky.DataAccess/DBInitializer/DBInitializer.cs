@@ -51,7 +51,7 @@ namespace Bulky.DataAccess.DBInitializer
                 //Creating an Application User and populating some of the values
                 _userManager.CreateAsync(new ApplicationUser //Application, password
                 {
-                    UserName = "Katlego Admin",
+                    UserName = "katlego.kgomari@24.com",
                     Email = "katlego.kgomari@24.com",
                     Name = "Katlego Kgomari",
                     PhoneNumber = "0987654321",
