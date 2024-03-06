@@ -1,0 +1,62 @@
+﻿<!--The first queation to ask yourself is what is the model
+    Here, our model will be the category itself
+
+
+    If nothing is passed in the view (in the controller) and if we are defining a category, it will create a new object for that and by default, all the values will be empty and that is what we want
+    Bascally, even if you do not pass anything in the view and you have a model category, it will think of it as a new category object with the default values
+
+-->
+@model Category
+
+<div class="card shadow border-0 mt-4 mb-4">
+    <div class="card-header bg-secondary bg-gradient ml-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h2 class="text-white py-2">Delete Category</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body p-4">
+        <form method="post">
+            <!--Since we are creating the category, we have a method of post. p-3 is padding 3 and mt-4 is margin-top of four. post mans that when the button is pushed, it will hit the same endpoint with the post request. for that we need to create another action request inside teh category controller which willbe of the same name but it will be of teh type httppost so that everytime something is being posted, this endpoint will be invoked-->
+            <input asp-for="Id" hidden /> <!--We have id in the hidden property and it is populated. no majic happened-->
+            <div class="border p-3 mt-4">
+               
+                @* <div asp-validation-summary="ModelOnly"> </div>  *@<!--This writes out all the applicable error messages-->
+                <div class="form-floating py-2 col-12">
+                    <!--margin bottom 3-->
+                    <input asp-for="Name" disabled class="form-control border-0 shadow" /> <!--form-control makes it stretch all the way out-->
+                    <label asp-for="Name" class="ms-2"></label>
+                    
+                    @* <span asp-validation-for="Name" class="text-danger"></span> *@
+                    <!--text-danger makes the text red. Having the helper tag is what helps us print out the error message-->
+                    </div>
+
+
+                    <div class="form-floating py-2 col-12">
+                        <!--margin bottom 3-->
+                    <input asp-for="DisplayOrder" disabled class="form-control border-0 shadow" /> <!--form-control makes it stretch all the way out-->
+                    <label asp-for="DisplayOrder" class="ms-2"></label>
+                    @* <span asp-validation-for="DisplayOrder" class="text-danger"></span> We don't have any validation when we delete and the field are disabled. User cannot edit anything*@
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-6 col-md-3">
+                        <!--if the screen is medium or large, you can take 3 columns-->
+                        <button type="submit" class="btn btn-danger form-control">Delete</button>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <!--we want a button to go back to the previous page. that will be a link-->
+                        <a asp-controller="Category" asp-action="Index" class="btn btn-outline-primary border form-control">Back</a>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+

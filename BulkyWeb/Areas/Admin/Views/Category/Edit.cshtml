@@ -1,0 +1,64 @@
+﻿@model Category //The category model that is being pased from Edit already had those sections populated and and we have tag helpers and that is why the values show on the page. So if name has some value, it will automatically be displayed. This is the equivalent of making an object of  categoty on this page.
+
+
+
+<div class="card shadow border-0 mt-4 mb-4">
+    <div class="card-header bg-secondary bg-gradient ml-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h2 class="text-white py-2">Edit Category</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body p-4">
+        <form method="post">
+            <!--Since we are editing the category, we have a method of post. p-3 is padding 3 and mt-4 is margin-top of four. post mans that when the button is pushed, it will hit the same endpoint with the post request. for that we need to create another action request inside teh category controller which willbe of the same name but it will be of teh type httppost so that everytime something is being posted, this endpoint will be invoked-->
+            <!--We don't have id in a field. Typically we require that in an input field like below  and then we would make it hidden-->
+            <!--But only because the variable name is ID. This line or input variable is not required.If for some reason your ID was category ID or anything else, then you will have to add the hidden property. Else What will happen is, rather than editing an existing record, it will keep that record and it will add a new record.-->
+            @*  <input asp-for="Id" hidden/> If for some reason your ID was category ID or anything else, then you will have to add the hidden property. Else What will happen is, rather than editing an existing record, it will keep that record and it*@
+            <div class="border p-3 mt-4">
+                
+                <div asp-validation-summary="ModelOnly"> </div> <!--This writes out all the applicable error messages-->
+                <div class="form-floating py-2 col-12">
+                    <!--margin bottom 3-->
+                    <input asp-for="Name" class="form-control border-0 shadow" /> <!--form-control makes it stretch all the way out-->
+                    <label asp-for="Name" class="ms-2"></label>
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                    <!--text-danger makes the text red. Having the helper tag is what helps us print out the error message-->
+                    </div>
+
+
+                <div class="form-floating py-2 col-12">
+                        <!--margin bottom 3-->
+                    <input asp-for="DisplayOrder"  class="form-control border-0 shadow" /> <!--form-control makes it stretch all the way out-->
+                    <label asp-for="DisplayOrder" class="ms-2"></label>
+                    <span asp-validation-for="DisplayOrder" class="text-danger"></span>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-6 col-md-3">
+                        <!--if the screen is medium or large, you can take 3 columns-->
+                        <button type="submit" class="btn btn-primary form-control">Update</button>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <!--we want a button to go back to the previous page. that will be a link-->
+                        <a asp-controller="Category" asp-action="Index" class="btn btn-outline-primary border form-control">Back</a>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+<!--Since this partial view only has scripts, we will have to add that in a new section that is only for scripts-->
+@section Scripts {
+    @{
+        //This is razor syntax. And when we have to consume any partial view, we use the partial tag
+        <partial name="_ValidationScriptsPartial" />
+        //Thus, we have added the parial view in the scripts section of the View page
+    }
+}

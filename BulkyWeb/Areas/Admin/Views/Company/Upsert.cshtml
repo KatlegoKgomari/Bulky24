@@ -1,0 +1,125 @@
+﻿@model Company //using a view model because we need a product and also some category information
+
+<div class="card shadow border-0 my-4 mb-4">
+    <div class="card-header bg-secondary bg-gradient ml-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h2 class="text-white py-2">@(Model.Id!=0? "Update": "Create") Company</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body p-4">
+        <form method="post" class="row" enctype="multipart/form-data">
+            <!--Since we are creating the category, we have a method of post. p-3 is padding 3 and mt-4 is margin-top of four. post mans that when the button is pushed, it will hit the same endpoint with the post request. for that we need to create another action request inside teh category controller which willbe of the same name but it will be of teh type httppost so that everytime something is being posted, this endpoint will be invoked-->
+            <input  asp-for="Id" hidden/> <!--This way, when we post, we always have it populated -->
+           
+            <div class="row">
+                <div class="col-12">
+                    <div class="border p-3">
+
+                        <div asp-validation-summary="ModelOnly"> </div> <!--This writes out all the applicable error messages-->
+                        <div class="form-floating py-2 col-12">
+                            <!--margin bottom 3-->
+                            <input asp-for="Name" class="form-control border-0 shadow" /> <!--form-control makes it stretch all the way out-->
+                            <label asp-for="Name" class="ms-2"></label>
+
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                            <!--text-danger makes the text red. Having the helper tag is what helps us print out the error message-->
+                        </div>
+                        <div class="form-floating py-2 col-12">
+                            <!--margin bottom 3-->
+                            <input asp-for="PhoneNumber" class="form-control border-0 shadow" /> <!--form-control makes it stretch all the way out-->
+                            <label asp-for="PhoneNumber" class="ms-2"></label>
+
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+                        <div class="form-floating py-2 col-12">
+                            <!--margin bottom 3-->
+                            <input asp-for="StreetAddress" class="form-control border-0 shadow" /> <!--form-control makes it stretch all the way out-->
+                            <label asp-for="StreetAddress" class="ms-2"></label>
+
+                            <span asp-validation-for="StreetAddress" class="text-danger"></span>
+                        </div>
+                        <div class="form-floating py-2 col-12">
+                            <!--margin bottom 3-->
+                            <input asp-for="City" class="form-control border-0 shadow" /> <!--form-control makes it stretch all the way out-->
+                            <label asp-for="City" class="ms-2"></label>
+
+                            <span asp-validation-for="City" class="text-danger"></span>
+                        </div>
+                        <div class="form-floating py-2 col-12">
+                            <!--margin bottom 3-->
+                            <input asp-for="State" class="form-control border-0 shadow" /> <!--form-control makes it stretch all the way out-->
+                            <label asp-for="State" class="ms-2"></label>
+
+                            <span asp-validation-for="State" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating py-2 col-12">
+                            <!--margin bottom 3-->
+                            <input asp-for="PostalCode" class="form-control border-0 shadow" /> <!--form-control makes it stretch all the way out-->
+                            <label asp-for="PostalCode" class="ms-2"></label>
+
+                            <span asp-validation-for="PostalCode" class="text-danger"></span>
+                        </div>
+                       
+
+                       
+
+                        <div class="row pt-2">
+                            <div class="col-6 col-md-3">
+                                <!--if the screen is medium or large, you can take 3 columns-->
+                                @if (Model.Id != 0)
+                                {
+                                    <button type="submit" class="btn btn-primary form-control">Update</button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="btn btn-primary form-control">Create</button>
+                                }
+
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <!--we want a button to go back to the previous page. that will be a link-->
+                                <a asp-controller="Company" asp-action="Index" class="btn btn-outline-primary border form-control">Back</a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                
+            </div>
+            
+        </form>
+    </div>
+</div>
+
+
+
+
+<!--Since this partial view only has scripts, we will have to add that in a new section that is only for scripts-->
+@section Scripts {
+    <script>/*  We have to put the javascript here */
+        tinymce.init({
+            selector: 'textarea',
+            plugins: 'anchor autolink charmap codesample emoticons lists table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed linkchecker a11ychecker tinymcespellchecker permanentpen powerpaste advtable advcode editimage advtemplate ai mentions tinycomments tableofcontents footnotes mergetags autocorrect typography inlinecss',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap ',
+            tinycomments_mode: 'embedded',
+            tinycomments_author: 'Author name',
+            mergetags_list: [
+                { value: 'First.Name', title: 'First Name' },
+                { value: 'Email', title: 'Email' },
+            ],
+            ai_request: (request, respondWith) => respondWith.string(() => Promise.reject("See docs to implement AI Assistant")),
+        });
+    </script>
+    @{
+        //This is razor syntax. And when we have to consume any partial view, we use the partial tag
+        <partial name="_ValidationScriptsPartial" />
+        //Thus, we have added the parial view in the scripts section of the View page
+    }
+}
+<!--because this partial view was sript-related, we added it to the Scripts section. But if it was not scripts related, we could have added it directly to the html. ->
+<!--By default, it will go and look in the shared folder because that is the default location for any partial view. Because of that, it will automatically find that and it will add the JavaScript that is needed for
+client side validation. Now the validation will be done first on the client’s side and for custom validation, it will go to the server side. This means that for error messages that we have in our data annotations, those appear before we can even press create-->
