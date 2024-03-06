@@ -54,7 +54,7 @@ namespace Bulky.DataAccess.DBInitializer
                     UserName = "Katlego Admin",
                     Email = "kgomari88@gmail.com",
                     Name = "Katlego Kgomari",
-                    PhoneNumber = "1234567890",
+                    PhoneNumber = "0987654321",
                     StreetAddress = "123 BombShell Street",
                     PostalCode = "1234",
                     State = "La La Land",
