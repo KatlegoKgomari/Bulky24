@@ -177,7 +177,7 @@ namespace BulkyWeb.Areas.Customer.Controllers
 			if (applicationUser.CompanyId.GetValueOrDefault() == 0) 
 			{ //if it's a reular customer, we need to get payment)
               //Stripe logic
-                var domain = "https://localhost:7075/";
+                var domain = Request.Scheme + "://" + Request.Host.Value + "/";
                 var options = new SessionCreateOptions
                 {
                     // When we go to this page, how will we know that the payment has been successful or not? We will need to get the session agan from stripe and check its status 

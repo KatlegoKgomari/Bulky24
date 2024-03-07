@@ -136,7 +136,7 @@ namespace BulkyWeb.Areas.Admin.Controllers
             OrderVM.OrderDetail = _unitOfWork.OrderDetailRepository.GetAll(u => u.Id == OrderVM.OrderHeader.Id, includeProperties: "Product");
 
             //Stripe logic
-            var domain = "https://localhost:7075/";
+            var domain = Request.Scheme+ "://"+Request.Host.Value + "/"; // get the https request and we do that using Request.scheme. It will get us either http or https.The complete statememt gets us the domain dynamically
             var options = new SessionCreateOptions
             {
                 // When we go to this page, how will we know that the payment has been successful or not? We will need to get the session agan from stripe and check its status 
