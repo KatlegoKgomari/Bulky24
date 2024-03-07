@@ -48,8 +48,7 @@ namespace Bulky.Models
         [ForeignKey("CategoryId")] //We specify that this category p is used for foreign key navigation for the Category ID
         [ValidateNever]
         public Category Category { get; set; } // Said navigation property to category table
-        [ValidateNever]
-        public string ImageUrl { get; set; } //We want this to be a file upload
+        
     }
 
 }// Before we add this  product table to our database, we have to applicationdbContext

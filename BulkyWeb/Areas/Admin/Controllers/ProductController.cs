@@ -78,21 +78,21 @@ namespace BulkyWeb.Areas.Admin.Controllers
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName); //Gives us a random name for our file
                     string productPath = Path.Combine(wwwRootPath, @"images/product"); // location to save file
 
-                    if(!string.IsNullOrEmpty(productVM.Product.ImageUrl))
-                    {
-                        //If the user is uploading a new image and there is already an existing image for that book. We want to delete the old image
-                        var oldImagePath = Path.Combine(wwwRootPath, productVM.Product.ImageUrl.TrimStart('\\'));
-                        if(System.IO.File.Exists(oldImagePath))
-                        {
-                            System.IO.File.Delete(oldImagePath);
-                        }
-                    }
-                    // Then we upload a new image and e update the url
-                    using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))//it's create because we are creating a new file
-                    {
-                        file.CopyTo(fileStream); //W want to copy the fle to teh file stream
-                    }
-                    productVM.Product.ImageUrl = @"\images\product\" + fileName;
+                    //if(!string.IsNullOrEmpty(productVM.Product.ImageUrl))
+                    //{
+                    //    //If the user is uploading a new image and there is already an existing image for that book. We want to delete the old image
+                    //    var oldImagePath = Path.Combine(wwwRootPath, productVM.Product.ImageUrl.TrimStart('\\'));
+                    //    if(System.IO.File.Exists(oldImagePath))
+                    //    {
+                    //        System.IO.File.Delete(oldImagePath);
+                    //    }
+                    //}
+                    //// Then we upload a new image and e update the url
+                    //using (var fileStream = new FileStream(Path.Combine(productPath, fileName), FileMode.Create))//it's create because we are creating a new file
+                    //{
+                    //    file.CopyTo(fileStream); //W want to copy the fle to teh file stream
+                    //}
+                    //productVM.Product.ImageUrl = @"\images\product\" + fileName;
                 }
                 // We can tell whther we are adding or updating based on wether the id is available
                 if(productVM.Product.Id == 0)
@@ -218,11 +218,11 @@ namespace BulkyWeb.Areas.Admin.Controllers
             }
 
             //If the product is not null, before we delete it, we need to delete its image as well
-            var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, productToBeDeleted.ImageUrl.TrimStart('\\'));
-            if (System.IO.File.Exists(oldImagePath))
-            {
-                System.IO.File.Delete(oldImagePath);
-            }
+            //var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, productToBeDeleted.ImageUrl.TrimStart('\\'));
+            //if (System.IO.File.Exists(oldImagePath))
+            //{
+            //    System.IO.File.Delete(oldImagePath);
+            //}
 
             _unitOfWork.ProductRepository.Remove(productToBeDeleted);
             _unitOfWork.Save(); //Don't forget the save

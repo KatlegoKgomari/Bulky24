@@ -13,7 +13,7 @@
         <form method="post" class="row" enctype="multipart/form-data">
             <!--Since we are creating the category, we have a method of post. p-3 is padding 3 and mt-4 is margin-top of four. post mans that when the button is pushed, it will hit the same endpoint with the post request. for that we need to create another action request inside teh category controller which willbe of the same name but it will be of teh type httppost so that everytime something is being posted, this endpoint will be invoked-->
             <input  asp-for="Product.Id" hidden/> <!--This way, when we post, we always have it populated -->
-            <input asp-for="Product.ImageUrl" hidden /> <!--When we don't have this line somewhere, then our controller sees it as null which means that we can't detect when there is an old image-->
+            @* <input asp-for="Product.ImageUrl" hidden /> *@ <!--When we don't have this line somewhere, then our controller sees it as null which means that we can't detect when there is an old image-->
             <div class="row">
                 <div class="col-10">
                     <div class="border p-3">
@@ -95,7 +95,7 @@
                         <div class="form-floating py-2 col-12">
                             <!--margin bottom 3-->
                             <input type="file" name="file" class="form-control border-0 shadow" /> <!--It need file name. We give it a name of file so it can bind to the ariable-->
-                            <label asp-for="Product.ImageUrl" class="ms-2"></label>
+                           @*  <label asp-for="Product.ImageUrl" class="ms-2"></label> *@
 
                         </div>
 
@@ -121,7 +121,7 @@
                     </div>
                 </div>
                 <div class="col-2">
-                    <img src="@Model.Product.ImageUrl" width= "100%" style="border-radius:5px; border:1px solid #bbb9b9 "/>
+                   @*  <img src="@Model.Product.ImageUrl" width= "100%" style="border-radius:5px; border:1px solid #bbb9b9 "/> *@
                 </div>
             </div>
             
