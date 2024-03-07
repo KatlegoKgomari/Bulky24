@@ -25,6 +25,10 @@ namespace Bulky.Models
         //We then need teh navigation proprty  (company id is the navigation property for this company that we have )
         [ForeignKey("CompanyId")]
         [ValidateNever] //Not validating because users won't always be part of a company
-        public Company Company { get; set; } //We made a change to our core model so we have to add a new migration
+        public Company? Company { get; set; } //We made a change to our core model so we have to add a new migration
+
+        [NotMapped] //Not puhed to database
+        public string Role { get; set; }
+
     }
 }
