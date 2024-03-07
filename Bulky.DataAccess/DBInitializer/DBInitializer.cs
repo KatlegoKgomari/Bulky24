@@ -62,7 +62,7 @@ namespace Bulky.DataAccess.DBInitializer
                 }, "Admin123*").GetAwaiter().GetResult();  //We use these methods becase we are in an async method
 
                 //Once user is created, we retrieve thatuser from the database
-                ApplicationUser user = _db.ApplicationUsers.FirstOrDefault(u => u.Email == "kgomari88@gmail.com"); //Notethat we retrieve the user using _db
+                ApplicationUser user = _db.ApplicationUsers.FirstOrDefault(u => u.Email == "katlego.kgomari@24.com"); //Notethat we retrieve the user using _db
                 _userManager.AddToRoleAsync(user, SD.Role_Admin).GetAwaiter().GetResult();
 
             }
