@@ -6,6 +6,7 @@ using Bulky.Utility;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Stripe;
 using System.Collections.Immutable;
 using System.Security.Cryptography.Xml;
 using static NuGet.Packaging.PackagingConstants;
@@ -29,7 +30,7 @@ namespace BulkyWeb.Areas.Admin.Controllers
         public IActionResult Index()
         {//We do not have to write any sql, entity framework core will handle the retrieving of the data 
             // we can access all the db sets that we added. 
-            List<Product> objProductList = _unitOfWork.ProductRepository.GetAll(includeProperties:"Category").ToList();
+            List<Bulky.Models.Product> objProductList = _unitOfWork.ProductRepository.GetAll(includeProperties:"Category").ToList();
            
             return View(objProductList); // When the actiob method is called, it returns back a view
             // We can only pass one object in a view
@@ -47,7 +48,7 @@ namespace BulkyWeb.Areas.Admin.Controllers
                     Text = u.Name, //We do this because we want the information to be of type SelectListItem. This is not the same as casting as you get to specifyteh vakues that you keep here. This is called a Projection
                     Value = u.Id.ToString(),
                 }), 
-                Product = new Product()
+                Product = new Bulky.Models.Product()
 
             };
             if(id == null || id == 0)
@@ -58,7 +59,7 @@ namespace BulkyWeb.Areas.Admin.Controllers
             else
             {
                 //If we have a value for id, then it is an edit
-                productVM.Product = _unitOfWork.ProductRepository.GetFirstOrDefault(u => u.Id == id, includeProperties:"Category");
+                productVM.Product = _unitOfWork.ProductRepository.GetFirstOrDefault(u => u.Id == id, includeProperties:"Category,ProductImages"); // The name that you have here must math the name in dbcontext. Once this navigation property is populated, we can interate through it in the view
                 return View(productVM);
             }
             
@@ -66,17 +67,61 @@ namespace BulkyWeb.Areas.Admin.Controllers
 
         //We get a category object because that is the modelwe defined in the view
         [HttpPost]
-        public IActionResult Upsert(ProductVM productVM, IFormFile? file) //When a file s uploaded, we get it in the iform file and we have to capture this file and save inside the images/product path 
+        public IActionResult Upsert(ProductVM productVM, List<IFormFile?> files) //When a file s uploaded, we get it in the iform file and we have to capture this file and save inside the images/product path 
         {
           
             if (ModelState.IsValid)// This will basically check if the model state(the category object) that we have is valid. This means that we will go to the category model and examine all the validations. If these aren't met, then the model state is not valid and it will not go to the database and we will not save category
             {
+                // We can tell whther we are adding or updating based on wether the id is available
+                if (productVM.Product.Id == 0)
+                {
+                    // then we are adding
+                    _unitOfWork.ProductRepository.Add(productVM.Product); //This add method is provided by entity framework core.This is the only line that you need to add a category (no need for insert statements). the add statement onl tells it that we want to add. nothing else. It is the save cahnges method that will execute all the changes
+                }
+                else
+                {
+                    _unitOfWork.ProductRepository.UpdateProduct(productVM.Product);
+                }
+                _unitOfWork.Save();
+
                 string wwwRootPath = _webHostEnvironment.WebRootPath; // That path will basically give us the root folder which is www root folder.
 
-                if (file != null)
+                if (files != null)
                 {
-                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName); //Gives us a random name for our file
-                    string productPath = Path.Combine(wwwRootPath, @"images/product"); // location to save file
+                    foreach(IFormFile file in files)
+                    {
+                        string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName); //Gives us a random name for our file
+                        string productPath = @"images\products\product-" + productVM.Product.Id;
+                        string finalPath = Path.Combine(wwwRootPath, productPath); // location to save file
+
+                        if (!Directory.Exists(finalPath))
+                        {
+                            Directory.CreateDirectory(finalPath);
+                        }
+                        using (var fileStream = new FileStream(Path.Combine(finalPath, fileName), FileMode.Create))//it's create because we are creating a new file
+                        {
+                            file.CopyTo(fileStream); //W want to copy the fle to teh file stream
+                        }
+
+                        //Saving a record in product image table
+
+                        ProductImage productImage = new()
+                        {
+                            ImageUrl = @"\" + productPath + @"\" + fileName,
+                            ProductId = productVM.Product.Id,
+                        };
+                        if (productVM.Product.ProductImages == null)
+                        {
+                            productVM.Product.ProductImages = new List<ProductImage>();
+                        }
+
+                        productVM.Product.ProductImages.Add(productImage);
+
+                    }
+                    _unitOfWork.ProductRepository.UpdateProduct(productVM.Product);
+                    _unitOfWork.Save();
+
+
 
                     //if(!string.IsNullOrEmpty(productVM.Product.ImageUrl))
                     //{
@@ -94,18 +139,8 @@ namespace BulkyWeb.Areas.Admin.Controllers
                     //}
                     //productVM.Product.ImageUrl = @"\images\product\" + fileName;
                 }
-                // We can tell whther we are adding or updating based on wether the id is available
-                if(productVM.Product.Id == 0)
-                {
-                    // then we are adding
-                    _unitOfWork.ProductRepository.Add(productVM.Product); //This add method is provided by entity framework core.This is the only line that you need to add a category (no need for insert statements). the add statement onl tells it that we want to add. nothing else. It is the save cahnges method that will execute all the changes
-                }
-                else
-                {
-                    _unitOfWork.ProductRepository.UpdateProduct(productVM.Product);
-                }
-                _unitOfWork.Save(); // this line of code actually executes what needs to be done. Previous lines of code kept track of what changes needed to be done. This works well because you might want to make 5 changes at one time and you odn't want to go back and forth for each one
-                TempData["success"] = "Product created successfully"; // And based on that key name, we can access its value.
+                
+                TempData["success"] = "Product created/updated successfully"; // And based on that key name, we can access its value.
                 return RedirectToAction("Index"); //Once the category is added, we want to redict them to the list of categories. We can't go back to teh view, but we can go back to teh index action.There it will reload the categories because when a category is added, we have to reload and pass that to the view
                                                   //Rather than redirecting to a view, we also have something called Redirect to action. If you are in the same controller, you just have to write the action name but uf you want to go to another controller, you need to specify it's name as teh second parameter. 
                                                   //If everything is valid, create and return back to the index
@@ -124,6 +159,29 @@ namespace BulkyWeb.Areas.Admin.Controllers
            
             
 
+        }
+        
+        public IActionResult DeleteImage(int imageId)
+        {
+            var imageToBeDeleted = _unitOfWork.ProductImageRepository.GetFirstOrDefault(u=> u.Id == imageId);
+            int productId = imageToBeDeleted.ProductId;
+            if (imageToBeDeleted != null)
+            {
+                if (!string.IsNullOrEmpty(imageToBeDeleted.ImageUrl))
+                {
+                   // If the product is not null, before we delete it, we need to delete its image as well
+                    var oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, imageToBeDeleted.ImageUrl.TrimStart('\\'));
+                    if (System.IO.File.Exists(oldImagePath))
+                    {
+                        System.IO.File.Delete(oldImagePath);
+                    }
+                }
+                _unitOfWork.ProductImageRepository.Remove(imageToBeDeleted);
+                _unitOfWork.Save();
+
+                TempData["success"] = "Deleted Successfully";
+            }
+            return RedirectToAction(nameof(Upsert), new {id=productId});
         }
 
         // This shows us the view. This is also the get action method. Since there is no http thing above it, it is a get metjod by default
@@ -204,7 +262,7 @@ namespace BulkyWeb.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult GetAll() // We can say get all because we are using mvc architecture
         {
-            List<Product> objProductList = _unitOfWork.ProductRepository.GetAll(includeProperties:"Category").ToList();
+            List<Bulky.Models.Product> objProductList = _unitOfWork.ProductRepository.GetAll(includeProperties:"Category").ToList();
             return Json(new {data = objProductList});
         }
 
@@ -223,6 +281,19 @@ namespace BulkyWeb.Areas.Admin.Controllers
             //{
             //    System.IO.File.Delete(oldImagePath);
             //}
+            
+            string productPath = @"images\products\product-" + id;
+            string finalPath = Path.Combine(_webHostEnvironment.WebRootPath, productPath); // location to save file
+
+            if (Directory.Exists(finalPath))
+            {
+                string[] filePaths = Directory.GetFiles(finalPath); //Deleting individual files
+                foreach (string filePath in filePaths)
+                {
+                    System.IO.File.Delete(filePath);
+                }
+                Directory.Delete(finalPath); //Deleting folder
+            }
 
             _unitOfWork.ProductRepository.Remove(productToBeDeleted);
             _unitOfWork.Save(); //Don't forget the save

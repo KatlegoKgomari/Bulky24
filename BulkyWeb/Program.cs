@@ -54,6 +54,12 @@ builder.Services.AddAuthentication().AddFacebook(option =>
     option.AppSecret = "6170c7e9af2d2a8e04b5b615f5607158";
 });
 
+builder.Services.AddAuthentication().AddMicrosoftAccount(option =>
+{
+    option.ClientId = "1b4f5b46-b363-4de8-a3a0-87878fbea06a";
+    option.ClientSecret = "JB.8Q~XtQDr-klco-WhiDFqbAmRAfgq9TQHWuae2";
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

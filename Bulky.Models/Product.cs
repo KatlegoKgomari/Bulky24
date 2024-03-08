@@ -48,7 +48,9 @@ namespace Bulky.Models
         [ForeignKey("CategoryId")] //We specify that this category p is used for foreign key navigation for the Category ID
         [ValidateNever]
         public Category Category { get; set; } // Said navigation property to category table
-        
+
+        [ValidateNever]
+        public List<ProductImage> ProductImages { get; set; } // we are telling ef core about the one to many relation we have between product and product image
     }
 
 }// Before we add this  product table to our database, we have to applicationdbContext

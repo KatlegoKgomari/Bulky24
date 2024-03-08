@@ -12,5 +12,6 @@ namespace Bulky.DataAccess.Repository.IRepository
     // that will make sure we have all of these base methods where entity will be category.
     // On top of that, we needed two more functionalities and those are update and save methods.
     {
+        public void Update(ApplicationUser applicationUser);
     }
 }

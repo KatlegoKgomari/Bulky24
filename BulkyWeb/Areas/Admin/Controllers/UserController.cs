@@ -20,13 +20,14 @@ namespace BulkyWeb.Areas.Admin.Controllers
     [Authorize(Roles = SD.Role_Admin)] //only these roles can access the action methods
     public class UserController : Controller
     {
-        private readonly ApplicationDbContext _db;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IUnitOfWork _unitOfWork;
 
-
-        public UserController(ApplicationDbContext db, UserManager<IdentityUser> userManager) //Here you are asking Dependency injection to provide an implemention 
+        public UserController( UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IUnitOfWork unitOfWork) //Here you are asking Dependency injection to provide an implemention 
         {
-            _db = db;
+            _roleManager = roleManager;
+            _unitOfWork = unitOfWork;
             _userManager = userManager;
             
         }
@@ -39,23 +40,23 @@ namespace BulkyWeb.Areas.Admin.Controllers
 
         public IActionResult RoleManagement(string userId)
         {
-            string RoleID = _db.UserRoles.FirstOrDefault(u => u.UserId == userId).RoleId;
+            //string RoleID = _db.UserRoles.FirstOrDefault(u => u.UserId == userId).RoleId;
             RoleManagementVM RoleVM = new RoleManagementVM()
             {
-                ApplicationUser = _db.ApplicationUsers.Include(u => u.Company).FirstOrDefault(u => u.Id == userId),
+                ApplicationUser = _unitOfWork.ApplicationUserRepository.GetFirstOrDefault(u => u.Id == userId, includeProperties:"Company"),
                 //Populate the drop downs
-                RoleList = _db.Roles.Select(i => new SelectListItem {
+                RoleList = _roleManager.Roles.Select(i => new SelectListItem {
                     Text = i.Name,
                     Value = i.Name
                 }),
 
-                CompanyList = _db.Companies.Select(i => new SelectListItem
+                CompanyList = _unitOfWork.CompanyRepository.GetAll().Select(i => new SelectListItem
                 {
                     Text = i.Name,
                     Value = i.Id.ToString()
                 })
             };
-            RoleVM.ApplicationUser.Role = _db.Roles.FirstOrDefault(u => u.Id == RoleID).Name;
+            RoleVM.ApplicationUser.Role = _userManager.GetRolesAsync(_unitOfWork.ApplicationUserRepository.GetFirstOrDefault(u=> u.Id == userId)).GetAwaiter().GetResult().FirstOrDefault();
             return View(RoleVM);
         }
 
@@ -63,13 +64,14 @@ namespace BulkyWeb.Areas.Admin.Controllers
         public IActionResult RoleManagement(RoleManagementVM roleManagementVM)
         {
             //Because we did not bind the property, we have to do this 
-            string RoleID = _db.UserRoles.FirstOrDefault(u=> u.UserId == roleManagementVM.ApplicationUser.Id).RoleId; // Current role 
+            //string RoleID = _db.UserRoles.FirstOrDefault(u=> u.UserId == roleManagementVM.ApplicationUser.Id).RoleId; // Current role 
             //retrieving old role
-            string oldRole = _db.Roles.FirstOrDefault(u => u.Id == RoleID).Name;
-            if(!(roleManagementVM.ApplicationUser.Role == oldRole))
+            string oldRole = _userManager.GetRolesAsync(_unitOfWork.ApplicationUserRepository.GetFirstOrDefault(u => u.Id == roleManagementVM.ApplicationUser.Id)).GetAwaiter().GetResult().FirstOrDefault();
+            ApplicationUser applicationUser = _unitOfWork.ApplicationUserRepository.GetFirstOrDefault(u => u.Id == roleManagementVM.ApplicationUser.Id);
+            if (!(roleManagementVM.ApplicationUser.Role == oldRole))
             {
                 // A role was updated 
-                ApplicationUser applicationUser = _db.ApplicationUsers.FirstOrDefault(u => u.Id == roleManagementVM.ApplicationUser.Id);
+                
                 if (roleManagementVM.ApplicationUser.Role == SD.Role_Company) // If they are a company, then along with assigning role, we need to assign company
                 {
                     applicationUser.CompanyId = roleManagementVM.ApplicationUser.CompanyId;
@@ -79,11 +81,20 @@ namespace BulkyWeb.Areas.Admin.Controllers
                     //If old role was a company role 
                     applicationUser.CompanyId = null;
                 }
-                _db.SaveChanges();
+                _unitOfWork.ApplicationUserRepository.Update(applicationUser);
+                _unitOfWork.Save();
                 _userManager.RemoveFromRoleAsync(applicationUser, oldRole).GetAwaiter().GetResult();
                 _userManager.AddToRoleAsync(applicationUser, roleManagementVM.ApplicationUser.Role).GetAwaiter().GetResult();
             }
-            
+            else
+            {
+                if(oldRole==SD.Role_Company && applicationUser.CompanyId!= roleManagementVM.ApplicationUser.CompanyId)
+                {
+                    applicationUser.CompanyId = roleManagementVM.ApplicationUser.CompanyId;
+                    _unitOfWork.ApplicationUserRepository.Update(applicationUser);
+                    _unitOfWork.Save();
+                }
+            }
             
             return View("Index");
         }
@@ -92,16 +103,14 @@ namespace BulkyWeb.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult GetAll() // We can say get all because we are using mvc architecture
         {
-            List<ApplicationUser> objUserList = _db.ApplicationUsers.Include(u=> u.Company).ToList();
-            var userRoles = _db.UserRoles.ToList(); // This is the mapping that had application user id and role id
-            var roles = _db.Roles.ToList(); 
-
+            List<ApplicationUser> objUserList = _unitOfWork.ApplicationUserRepository.GetAll(includeProperties:"Company").ToList();
+            
             foreach(var user in objUserList)
             {
                 //We  also want the role of the user. We get their role id
                 //based on the id, we can find teh role id and thus the role of the user
-                var roleId = userRoles.FirstOrDefault(u=> u.UserId == user.Id).RoleId;
-                user.Role= roles.FirstOrDefault(u=> u.Id == roleId).Name;
+             
+                user.Role = _userManager.GetRolesAsync(user).GetAwaiter().GetResult().FirstOrDefault();
                 if (user.Company == null)
                 {
                     user.Company = new() { Name = "" }; //If they are not a  company, we make the company name an empty string  so an error does not come up in user.js
@@ -114,7 +123,7 @@ namespace BulkyWeb.Areas.Admin.Controllers
         [HttpPost]
         public IActionResult LockUnlock([FromBody]string id) // We can say get all because we are using mvc architecture
         {
-            var  objFromDb = _db.ApplicationUsers.FirstOrDefault(u=>u.Id == id);
+            var  objFromDb =_unitOfWork.ApplicationUserRepository.GetFirstOrDefault(u=> u.Id==id);
             if(objFromDb == null)
             {
                 return Json(new { success = false, message = "Error while Locking/Unlocking" });
@@ -128,7 +137,10 @@ namespace BulkyWeb.Areas.Admin.Controllers
                 objFromDb.LockoutEnd= DateTime.Now.AddYears(1000);
             }
 
-            _db.SaveChanges(); //Thsi works because the record here is being tracked by ef core
+            _unitOfWork.ApplicationUserRepository.Update(objFromDb);
+            _unitOfWork.Save();
+
+            //_db.SaveChanges(); //Thsi works because the record here is being tracked by ef core
             return Json(new { success = true, message = "Operation Successful" }); //Our API is being invoked and it returns Json
         }
         #endregion

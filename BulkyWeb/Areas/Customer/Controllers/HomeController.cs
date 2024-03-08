@@ -25,7 +25,7 @@ namespace BulkyWeb.Areas.Customer.Controllers
         {
             
 
-            IEnumerable<Product> productList = _unitOfWork.ProductRepository.GetAll(includeProperties: "Category");
+            IEnumerable<Product> productList = _unitOfWork.ProductRepository.GetAll(includeProperties: "Category,ProductImages");
             return View(productList);  //returning the product list back to the view
         }
 
@@ -33,7 +33,7 @@ namespace BulkyWeb.Areas.Customer.Controllers
         {
             ShoppingCart cart = new ShoppingCart
             {
-                Product = _unitOfWork.ProductRepository.GetFirstOrDefault(u => u.Id == id, includeProperties: "Category"),
+                Product = _unitOfWork.ProductRepository.GetFirstOrDefault(u => u.Id == id, includeProperties: "Category,ProductImages"),
                 Count = 1, //default count
                 ProductId = id
 

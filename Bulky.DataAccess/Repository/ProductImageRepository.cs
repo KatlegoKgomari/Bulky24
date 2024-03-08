@@ -10,19 +10,19 @@ using Bulky.DataAccess.Data;
 
 namespace Bulky.DataAccess.Repository
 {
-    public class ApplicationUserRepository : Repository<ApplicationUser>, IApplicationUserRepository
+    public class ProductImageRepository : Repository<ProductImage>, IProductImageRepository
     {
         // all the other methods have been remmoved because we have an implementation for them. This is specified in Repository and here we specify that it will be a category
         private readonly ApplicationDbContext _db;
-        public ApplicationUserRepository(ApplicationDbContext db):base(db) //When we get this iplementation, we want to get it to the base class (so whatever db we get here,we pass to the repository)
+        public ProductImageRepository(ApplicationDbContext db):base(db) //When we get this iplementation, we want to get it to the base class (so whatever db we get here,we pass to the repository)
         {
             _db = db;
         }
         
-        public void Update(ApplicationUser user)
+
+        public void UpdateProductImage(ProductImage obj)
         {
-            _db.ApplicationUsers.Update(user);
+            _db.ProductImages.Update(obj);
         }
-        
     }
 }
